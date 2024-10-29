@@ -1,0 +1,6 @@
+<launch>
+  <!-- Launch the KnowRobDesignatorService node -->
+  <node pkg="knowrob_designator" type="DesignatorService.py" name="DesignatorService" output="screen">
+    <!-- Optional: Set any required parameters or remap topics here -->
+  </node>
+</launch>
