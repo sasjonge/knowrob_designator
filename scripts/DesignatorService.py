@@ -28,7 +28,7 @@ class DesignatorService:
         elif "type=\"Fridge\"" in query and "handle=\"?handle\"" in query:
             # Respond to the handle query
             response = {
-                "?handle": "base_link_frame",  # Replace with actual base link frame from semantic map
+                "?handle": "frdige_door_link_handle",  # Replace with actual base link frame from semantic map
                 "?open": True
             }
         else:
