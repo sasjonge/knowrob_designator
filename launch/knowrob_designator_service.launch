@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <launch>
   <!-- Load KnowRob settings -->
   <arg name="knowrob_settings" default="$(find knowrob)/tests/settings/lpn.json" />
