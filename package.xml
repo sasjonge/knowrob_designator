@@ -2,24 +2,38 @@
 <package format="2">
   <name>knowrob_designator</name>
   <version>0.1.0</version>
-  <description>The knowrob_designator package provides a service node for querying semantic information in KnowRob.</description>
+  <description>The knowrob_designator package provides a service node for querying semantic
+    information in KnowRob.</description>
 
   <!-- License -->
   <license>BSD</license>
 
   <!-- Maintainer information -->
-  <maintainer email="your_email@example.com">Your Name</maintainer>
-
-  <!-- Author information -->
-  <author email="your_email@example.com">Your Name</author>
+  <maintainer email="jongebloed@uni-bremen.com">Sascha Jongebloed</maintainer>
 
   <!-- Dependencies -->
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>rospy</build_depend>
+  <build_depend>message_generation</build_depend>
   <build_depend>std_msgs</build_depend>
-  <exec_depend>rospy</exec_depend>
-  <exec_depend>std_msgs</exec_depend>
+  <build_depend>actionlib_msgs</build_depend>
+  <build_depend>actionlib</build_depend>
+  <build_depend>visualization_msgs</build_depend>
   <exec_depend>message_runtime</exec_depend>
+  <exec_depend>actionlib</exec_depend>
+  <exec_depend>actionlib_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <test_depend>rostest</test_depend>
+  <test_depend>python3</test_depend>
+
+  <depend>roslib</depend>
+  <depend>roscpp</depend>
+  <depend>knowrob</depend>
+  <depend>knowrob_ros</depend>
+  <depend>spdlog</depend>
+  <depend>rospy</depend>
+  <depend>libmongoc-dev</depend>
+  <depend>fmt</depend>
+
 
   <!-- Additional tags -->
   <export>

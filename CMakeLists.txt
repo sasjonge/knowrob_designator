@@ -1,26 +1,24 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(knowrob_designator)
 
-# Add this line at the top to find messages and services
 find_package(catkin REQUIRED COMPONENTS
+  actionlib
+  actionlib_msgs
   rospy
   std_msgs
-  message_generation  # Add this for custom services
+  message_generation
+  knowrob_ros  # for KnowRobRosLib
 )
 
-# Add this section to enable service generation
-add_service_files(
-  FILES
-  SimpleQuery.srv
+add_action_files(
+  DIRECTORY action
+  FILES LogDesignator.action
 )
 
-# Add this section to generate messages and services
 generate_messages(
-  DEPENDENCIES
-  std_msgs
+  DEPENDENCIES actionlib_msgs std_msgs
 )
 
-# Ensure catkin_package includes message runtime dependencies
 catkin_package(
-  CATKIN_DEPENDS message_runtime
+  CATKIN_DEPENDS actionlib actionlib_msgs rospy std_msgs message_runtime knowrob_ros
 )
