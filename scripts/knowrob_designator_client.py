@@ -10,7 +10,7 @@ from time import time
 def main():
     rospy.init_node('designator_resolve_test_client')
 
-    client = actionlib.SimpleActionClient('/knowrob/designator_resolving_started', DesignatorResolutionStartAction)
+    client = actionlib.SimpleActionClient('/knowrob/designator/resolving_started', DesignatorResolutionStartAction)
     rospy.loginfo("Waiting for action server...")
     client.wait_for_server()
 

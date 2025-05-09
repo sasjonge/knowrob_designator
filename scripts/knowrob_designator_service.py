@@ -23,13 +23,13 @@ class DesignatorLoggerServer:
 
         # Start an action server for each action type
         self.init_server = actionlib.SimpleActionServer(
-            'knowrob/designator_init',
+            '/knowrob/designator/init',
             DesignatorInitAction,
             execute_cb=self.handle_init,
             auto_start=False
         )
         self.resolve_start_server = actionlib.SimpleActionServer(
-            'knowrob/designator_resolving_started',
+            '/knowrob/designator/resolving_started',
             DesignatorResolutionStartAction,
             execute_cb=self.handle_resolve_start,
             auto_start=False
@@ -41,13 +41,13 @@ class DesignatorLoggerServer:
             auto_start=False
         )
         self.exec_start_server = actionlib.SimpleActionServer(
-            'knowrob/designator_execution_start',
+            '/knowrob/designator/execution_start',
             DesignatorExecutionStartAction,
             execute_cb=self.handle_exec_start,
             auto_start=False
         )
         self.exec_finished_server = actionlib.SimpleActionServer(
-            'knowrob/designator_execution_Finished',
+            '/knowrob/designator/execution_finished',
             DesignatorExecutionFinishedAction,
             execute_cb=self.handle_exec_finished,
             auto_start=False

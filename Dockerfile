@@ -4,8 +4,10 @@ MAINTAINER Sascha Jongebloed, jongebloed@uni-bremen.de
 ENV SWI_HOME_DIR=/usr/lib/swi-prolog
 ENV LD_LIBRARY_PATH=/usr/lib/swi-prolog/lib/x86_64-linux:$LD_LIBRARY_PATH
 
-RUN apt update
 RUN apt-get update && apt-get install -y \
+    software-properties-common && \
+    apt-add-repository ppa:swi-prolog/stable && \
+    apt-get update && apt-get install -y \
     gdb \
     g++ \
     clang \
@@ -14,11 +16,17 @@ RUN apt-get update && apt-get install -y \
     libeigen3-dev \
     libspdlog-dev \
     libraptor2-dev \
+    librdf0-dev \
+    libgtest-dev \
+    libboost-python-dev \
+    libboost-serialization-dev \
+    libboost-program-options-dev \
+    libfmt-dev \
     mongodb-clients \
     libmongoc-1.0-0 \
     libmongoc-dev \
-    libfmt-dev \
-    software-properties-common \
+    doxygen \
+    graphviz \
     python3 \
     python3-dev \
     python3-pip \
@@ -26,12 +34,10 @@ RUN apt-get update && apt-get install -y \
     python-is-python3 \
     python3-catkin-pkg \
     python3-catkin-tools \
-    git
-RUN apt install -y ros-noetic-catkin 
-
-RUN apt-add-repository ppa:swi-prolog/stable
-RUN apt update
-RUN apt install -y swi-prolog*
+    git \
+    ros-noetic-catkin \
+    ros-noetic-tf2-geometry-msgs \
+    swi-prolog*
 
 # KnowRob dependencies
 RUN apt install -y swi-prolog libspdlog-dev \
@@ -47,7 +53,7 @@ RUN mkdir /catkin_ws/src
 # Build workspace with knowrob
 WORKDIR /catkin_ws/src
 RUN git clone https://github.com/knowrob/knowrob.git
-RUN git clone https://github.com/sasjonge/knowrob_ros.git
+RUN git clone https://github.com/knowrob/knowrob_ros.git
 WORKDIR /catkin_ws
 RUN /usr/bin/catkin init
 RUN . /opt/ros/noetic/setup.sh && /usr/bin/catkin build
