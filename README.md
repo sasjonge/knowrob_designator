@@ -27,10 +27,15 @@ knowrob_designator/
 ├── package.xml                        # ROS package metadata
 ├── README.md                          # You are here
 ├── run_knowrob_designator.sh          # Optional helper script (not required)
+├── src/
+│   ├── knowrob_designator/            # Source code for the action server
+│   │   ├── knowrob_designator.py      # Main action server implementation
+│   │   └── __init__.py                  # Python package initialization
 ├── scripts/
 │   ├── designator_parser.py           # Parses JSON designators into triples (no ROS dependency)
 │   ├── knowrob_designator_client.py   # Example client that sends a test designator
 │   └── knowrob_designator_service.py  # Action server that logs designators to KnowRob
+├── setup.py                           # Python package setup
 └── srv/                               # (empty, safe to delete or populate if needed)
 ````
 
@@ -65,27 +70,7 @@ docker exec -it <your_container_name> bash
 root@<container_id>:/catkin_ws# rosrun knowrob_designator knowrob_designator_client.py
 ```
 
----
-
-## Example Flow
-
-The client will send a test JSON designator like:
-
-```json
-{
-  "anAction": {
-    "type": "Transporting",
-    "objectActedOn": { "anObject": { "type": "Milk" } },
-    "target": {
-      "theLocation": {
-        "goal": { "theObject": { "name": "Table1" } }
-      }
-    }
-  }
-}
-```
-
-This is parsed into triples and sent to KnowRob, where it becomes part of the symbolic knowledge base.
+This runs a simple client that sends a test designator to the action server. The designator is NOT parsed at the moment and not expected to be valid. 
 
 ---
 

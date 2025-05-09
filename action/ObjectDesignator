@@ -1,0 +1,9 @@
+# Add or modify and object
+string json_designator
+time start
+time end
+---
+bool success
+string message
+---
+string status

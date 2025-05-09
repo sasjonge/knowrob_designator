@@ -1,72 +1,90 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-knowrob_designator_service.py
-
-This script starts a ROS action server that accepts a JSON-encoded "designator"
-(i.e., a structured symbolic description of a situation, action, or object)
-and logs its semantic content as RDF-style triples into the KnowRob knowledge base
-using the 'tell' interface.
-
-The conversion from nested designator to triples is performed by the DesignatorParser class.
-
-Author: Sascha Jongebloed
-"""
 
 import rospy
-import json
 import actionlib
+import json
+from std_msgs.msg import String
 
-from knowrob_designator.msg import LogDesignatorAction, LogDesignatorResult, LogDesignatorFeedback
+# Import all designator action types
+from knowrob_designator.msg import (
+    DesignatorInitAction, DesignatorInitResult, DesignatorInitFeedback,
+    DesignatorResolutionStartAction, DesignatorResolutionStartResult, DesignatorResolutionStartFeedback,
+    DesignatorResolutionFinishedAction, DesignatorResolutionFinishedResult, DesignatorResolutionFinishedFeedback,
+    DesignatorExecutionStartAction, DesignatorExecutionStartResult, DesignatorExecutionStartFeedback,
+    DesignatorExecutionFinishedAction, DesignatorExecutionFinishedResult, DesignatorExecutionFinishedFeedback
+)
+
 from knowrob_ros.knowrob_ros_lib import KnowRobRosLib, TripleQueryBuilder, get_default_modalframe
-from designator_parser import DesignatorParser
+from knowrob_designator.designator_parser import DesignatorParser
 
-
-class LogDesignatorServer:
-    """
-    Action server that receives a JSON-formatted designator, parses it into RDF triples,
-    and asserts it into the KnowRob knowledge base using the tell interface.
-
-    The action server listens on: /knowrob_designator/log
-    """
-
+class DesignatorLoggerServer:
     def __init__(self):
-        """
-        Initializes the action server and supporting tools:
-        - KnowRobRosLib: for communicating with KnowRob via actionlib.
-        - DesignatorParser: to convert designator structures to triples.
-        """
-        self.server = actionlib.SimpleActionServer(
-            '/knowrob_designator/log',          # Action name
-            LogDesignatorAction,                # Action definition
-            self.execute_log,                   # Callback for execution
-            False                                # Do not start immediately
+        rospy.init_node('designator_logger_server')
+
+        # Start an action server for each action type
+        self.init_server = actionlib.SimpleActionServer(
+            'knowrob/designator_init',
+            DesignatorInitAction,
+            execute_cb=self.handle_init,
+            auto_start=False
         )
-
+        self.resolve_start_server = actionlib.SimpleActionServer(
+            'knowrob/designator_resolving_started',
+            DesignatorResolutionStartAction,
+            execute_cb=self.handle_resolve_start,
+            auto_start=False
+        )
+        self.resolve_finished_server = actionlib.SimpleActionServer(
+            'knowrob/designator_resolving_finished',
+            DesignatorResolutionFinishedAction,
+            execute_cb=self.handle_resolve_finished,
+            auto_start=False
+        )
+        self.exec_start_server = actionlib.SimpleActionServer(
+            'knowrob/designator_execution_start',
+            DesignatorExecutionStartAction,
+            execute_cb=self.handle_exec_start,
+            auto_start=False
+        )
+        self.exec_finished_server = actionlib.SimpleActionServer(
+            'knowrob/designator_execution_Finished',
+            DesignatorExecutionFinishedAction,
+            execute_cb=self.handle_exec_finished,
+            auto_start=False
+        )
+        
+        # Initialize the KnowRob client
         self.knowrob = KnowRobRosLib()
-        self.knowrob.init_clients()             # Set up action clients for KnowRob
+        self.knowrob.init_clients()        
+        
+        # Parser for designators
+        self.parser = DesignatorParser()     
 
-        self.parser = DesignatorParser()        # Stateless parser for designators
-        self.server.start()                     # Start the action server
+        # Start all servers
+        self.init_server.start()
+        self.resolve_start_server.start()
+        self.resolve_finished_server.start()
+        self.exec_start_server.start()
+        self.exec_finished_server.start()
 
-        rospy.loginfo("LogDesignator action server started.")
+        rospy.loginfo("DesignatorLoggerServer: all servers started.")
 
-    def execute_log(self, goal):
-        """
-        Callback function for the action server.
+    def handle_init(self, goal):
+        rospy.loginfo(f"Init Designator: {goal.designator_id}")
+        rospy.logdebug(f"Full JSON:\n{goal.json_designator}")
+        result = DesignatorInitResult(success=True, message="Designator init logged.", status="done")
+        self.init_server.set_succeeded(result)
 
-        It takes the designator (as a JSON string), parses it into triples,
-        and sends those triples to KnowRob. The result is reported via action result.
-
-        Args:
-            goal (LogDesignatorGoal): contains a JSON string with the designator structure
-        """
-        feedback = LogDesignatorFeedback()
-        result = LogDesignatorResult()
+    def handle_resolve_start(self, goal):
+        feedback = DesignatorResolutionStartFeedback()
+        result = DesignatorResolutionStartResult()
 
         try:
+            rospy.loginfo(f"[ResolveStart] Processing Designator: {goal.designator_id}")
+            
             # Parse incoming JSON string to dictionary
             designator = json.loads(goal.json_designator)
+            rospy.logdebug(f"Parsed JSON Designator: {designator}")
 
             # Convert to RDF-style triples
             triples = self.parser.parse(designator)
@@ -77,28 +95,44 @@ class LogDesignatorServer:
                 builder.add(s, p, o)
 
             feedback.status = f"Sending {len(triples)} triples to KnowRob..."
-            self.server.publish_feedback(feedback)
+            self.resolve_start_server.publish_feedback(feedback)
 
             # Send triples to KnowRob via tell action
-            tell_result = self.knowrob.tell(builder.get_triples(), get_default_modalframe())
-            result.success = (tell_result.status == 1)
-            result.message = "Success" if result.success else "Failed to log to KnowRob"
+            # Note: Commented out for now
+            # tell_result = self.knowrob.tell(builder.get_triples(), get_default_modalframe())
+
+            # result.success = (tell_result.status == 1)
+            # result.message = "Success" if result.success else "Failed to log to KnowRob"
+
+            result.success = True  # Simulate success for now
+            result.message = "done"
 
         except Exception as e:
-            # Handle parsing or communication failure
+            rospy.logerr(f"[ResolveStart] Error: {str(e)}")
             result.success = False
-            result.message = f"Exception: {str(e)}"
+            result.message = str(e)
+            result.status = "exception"
 
-        # Signal completion to the action client
-        self.server.set_succeeded(result)
+        self.resolve_start_server.set_succeeded(result)
+    
+    def handle_resolve_finished(self, goal):
+        rospy.loginfo(f"Finished Resolving Designator: {goal.designator_id} from {goal.resolved_from_id}")
+        result = DesignatorResolutionFinishedResult(success=True, message="Resolution finished logged.", status="done")
+        self.resolve_finished_server.set_succeeded(result)
 
+    def handle_exec_start(self, goal):
+        rospy.loginfo(f"Execution Started: {goal.designator_id}")
+        result = DesignatorExecutionStartResult(success=True, message="Execution started logged.", status="done")
+        self.exec_start_server.set_succeeded(result)
+
+    def handle_exec_finished(self, goal):
+        rospy.loginfo(f"Execution Finished: {goal.designator_id}")
+        result = DesignatorExecutionFinishedResult(success=True, message="Execution finished logged.", status="done")
+        self.exec_finished_server.set_succeeded(result)
 
 if __name__ == '__main__':
-    print("Starting KnowRob Designator Service...")
-    rospy.init_node('knowrob_designator')  # Initialize the ROS node
-
-    print("Initializing KnowRob Designator Server...")
-    server = LogDesignatorServer()
-
-    print("KnowRob Designator Server is running...")
-    rospy.spin()  # Keep the node alive
+    try:
+        DesignatorLoggerServer()
+        rospy.spin()
+    except rospy.ROSInterruptException:
+        pass
